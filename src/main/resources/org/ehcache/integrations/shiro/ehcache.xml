@@ -19,11 +19,11 @@ limitations under the License.
     <persistence directory="${java.io.tmpdir}/shiro-ehcache"/>
 
     <cache alias="shiro-activeSessionCache">
-
+        <heap unit="entries">10000</heap>
     </cache>
 
     <cache alias="org.apache.shiro.realm.text.PropertiesRealm-0-accounts">
-
+        <heap unit="entries">10000</heap>
     </cache>
 
     <cache-template name="defaultCacheConfiguration">
