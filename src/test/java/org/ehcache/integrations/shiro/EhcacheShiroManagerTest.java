@@ -9,14 +9,17 @@ public class EhcacheShiroManagerTest {
   @Test
   public void testGetCache() throws Exception {
     EhcacheShiroManager cacheManager = new EhcacheShiroManager();
-    Cache<Object, Object> someCache = cacheManager.getCache("someCache");
-    Assert.assertNotNull(someCache);
 
-    final String key = "key";
-    final String value = "value";
-    Assert.assertNull(someCache.put(key, value));
-    Assert.assertEquals(value, someCache.get(key));
+    try {
+      Cache<Object, Object> someCache = cacheManager.getCache("someCache");
+      Assert.assertNotNull(someCache);
 
-    cacheManager.destroy();
+      final String key = "key";
+      final String value = "value";
+      Assert.assertNull(someCache.put(key, value));
+      Assert.assertEquals(value, someCache.get(key));
+    } finally {
+      cacheManager.destroy();
+    }
   }
 }
