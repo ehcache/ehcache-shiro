@@ -41,9 +41,7 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
   }
 
   public V get(K k) throws CacheException {
-    if (log.isTraceEnabled()) {
-      trace("Getting object", k);
-    }
+    trace("Getting object", k);
 
     if (k == null) {
       return null;
@@ -51,18 +49,14 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
 
     V value = cache.get(k);
     if (value == null) {
-      if (log.isTraceEnabled()) {
-        log.trace("Element for [" + k + "] is null.");
-      }
+      log.trace("Element for [{}] is null.", k);
     }
 
     return value;
   }
 
   public V put(K k, V v) throws CacheException {
-    if (log.isTraceEnabled()) {
-      trace("Putting object", k);
-    }
+    trace("Putting object", k);
 
     V previousValue = get(k);
     cache.put(k, v);
@@ -70,9 +64,7 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
   }
 
   public V remove(K k) throws CacheException {
-    if (log.isTraceEnabled()) {
-      trace("Removing object", k);
-    }
+    trace("Removing object", k);
 
     V previousValue = get(k);
     cache.remove(k);
@@ -80,10 +72,7 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
   }
 
   public void clear() throws CacheException {
-    if (log.isTraceEnabled()) {
-      log.trace("Clearing all objects from cache [" + cache + "]");
-    }
-
+    log.trace("Clearing all objects from cache [" + cache + "]");
     cache.clear();
   }
 
@@ -121,6 +110,6 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
   }
 
   private void trace(String operation, K k) {
-    log.trace(operation + " using cache [" + cache + "] for key [" + k + "]");
+    log.trace("{} using cache [{}] for key [{}]", operation, cache, k);
   }
 }

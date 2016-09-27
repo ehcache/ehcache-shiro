@@ -23,6 +23,8 @@ public class EhcacheShiroTest {
 
   private Cache<Long, String> basicCache;
 
+  private EhcacheShiro<Long, String> shiroCache;
+
   @Before
   public void setUp() {
     cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
@@ -30,6 +32,7 @@ public class EhcacheShiroTest {
                     Long.class, String.class, ResourcePoolsBuilder.heap(100))).build(true);
 
     basicCache = cacheManager.getCache("basicCache", Long.class, String.class);
+    shiroCache = new EhcacheShiro<>(basicCache);
   }
 
   @After
@@ -40,64 +43,57 @@ public class EhcacheShiroTest {
 
   @Test
   public void testPutAndGet() {
-    EhcacheShiro<Long, String> cache = new EhcacheShiro<>(basicCache);
-
     final Long key = Long.valueOf(1);
     final String value = "some string value";
 
-    Assert.assertNull(cache.get(key));
-    Assert.assertNull(cache.put(key, value));
-    Assert.assertEquals(value, cache.get(key));
-    Assert.assertEquals(value, cache.put(key, "another value"));
+    Assert.assertNull(shiroCache.get(key));
+    Assert.assertNull(shiroCache.put(key, value));
+    Assert.assertEquals(value, shiroCache.get(key));
+    Assert.assertEquals(value, shiroCache.put(key, "another value"));
   }
 
   @Test
   public void testSize() {
-    assertSize();
+    putElementsAndAssertSize();
   }
 
   @Test
   public void testClear() {
-    EhcacheShiro<Long, String> cache = assertSize();
-    cache.clear();
-    Assert.assertEquals(0, cache.size());
+    putElementsAndAssertSize();
+    shiroCache.clear();
+    Assert.assertEquals(0, shiroCache.size());
   }
 
-  private EhcacheShiro<Long, String> assertSize() {
-    EhcacheShiro<Long, String> cache = new EhcacheShiro<>(basicCache);
-
+  private void putElementsAndAssertSize() {
     int count = 10;
     for (int i = 0; i < count; i++) {
-      cache.put(Long.valueOf(i), "prefix-" + i);
+      shiroCache.put(Long.valueOf(i), "prefix-" + i);
     }
 
-    Assert.assertEquals(10, cache.size());
-
-    return cache;
+    Assert.assertEquals(10, shiroCache.size());
   }
 
   @Test
   public void testKeys() {
-    EhcacheShiro<Long, String> cache = assertSize();
-    assertEquals(cache.keys(), cache);
+    putElementsAndAssertSize();
+    assertEquals(shiroCache.keys());
   }
 
   @Test
   public void testValues() {
-    EhcacheShiro<Long, String> cache = assertSize();
-    assertEquals(cache.values(), cache);
+    putElementsAndAssertSize();
+    assertEquals(shiroCache.values());
   }
 
-  private <T> void assertEquals(Collection<T> toInspect, EhcacheShiro<Long, String> cache) {
-    Assert.assertEquals(toInspect.size(), cache.size());
+  private <T> void assertEquals(Collection<T> toInspect) {
+    Assert.assertEquals(toInspect.size(), shiroCache.size());
   }
 
   @Test
   public void testRemove() {
-    EhcacheShiro<Long, String> cache = new EhcacheShiro<>(basicCache);
     final Long key = Long.valueOf(1);
     final String value = "yet another value";
-    Assert.assertNull(cache.put(key, value));
-    Assert.assertEquals(value, cache.remove(key));
+    Assert.assertNull(shiroCache.put(key, value));
+    Assert.assertEquals(value, shiroCache.remove(key));
   }
 }
