@@ -32,7 +32,7 @@ public class EhcacheShiroTest {
                     Long.class, String.class, ResourcePoolsBuilder.heap(100))).build(true);
 
     basicCache = cacheManager.getCache("basicCache", Long.class, String.class);
-    shiroCache = new EhcacheShiro<>(basicCache);
+    shiroCache = new EhcacheShiro<Long, String>(basicCache);
   }
 
   @After
