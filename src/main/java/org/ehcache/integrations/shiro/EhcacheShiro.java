@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -88,25 +87,30 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
   }
 
   public Set<K> keys() {
-    Iterator<org.ehcache.Cache.Entry<K, V>> iterator = cache.iterator();
-    final Set<K> keys = new HashSet<K>();
-    while (iterator.hasNext()) {
-      org.ehcache.Cache.Entry<K, V> entry = iterator.next();
-      keys.add(entry.getKey());
-    }
+    return new EhcacheSetWrapper<K>(this, cache) {
+      @Override
+      public Iterator<K> iterator() {
+        return new EhcacheIterator<K, V, K>(cache.iterator()) {
 
-    return keys;
+          protected K getNext(Iterator<org.ehcache.Cache.Entry<K, V>> cacheIterator) {
+            return cacheIterator.next().getKey();
+          }
+        };
+      }
+    };
   }
 
   public Collection<V> values() {
-    Iterator<org.ehcache.Cache.Entry<K, V>> iterator = cache.iterator();
-    final Set<V> values = new HashSet<V>();
-    while (iterator.hasNext()) {
-      org.ehcache.Cache.Entry<K, V> entry = iterator.next();
-      values.add(entry.getValue());
-    }
-
-    return values;
+    return new EhcacheCollectionWrapper<V>(this, cache) {
+      @Override
+      public Iterator<V> iterator() {
+        return new EhcacheIterator<K, V, V>(cache.iterator()) {
+          protected V getNext(Iterator<org.ehcache.Cache.Entry<K, V>> cacheIterator) {
+            return cacheIterator.next().getValue();
+          }
+        };
+      }
+    };
   }
 
   private void trace(String operation, K k) {
