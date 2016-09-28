@@ -61,6 +61,21 @@ public class EhcacheShiroTest extends BaseEhcacheShiroTest {
   }
 
   @Test
+  public void testEmptyKeys() {
+    assertEmptyCollection(shiroCache.keys());
+  }
+
+  @Test
+  public void testEmptyValues() {
+    assertEmptyCollection(shiroCache.values());
+  }
+
+  private <T> void assertEmptyCollection(Collection<T> collection) {
+    Assert.assertTrue(collection.isEmpty());
+    Assert.assertEquals(0, collection.size());
+  }
+
+  @Test
   public void testValues() {
     putElementsAndAssertSize();
     assertEquals(shiroCache.values());

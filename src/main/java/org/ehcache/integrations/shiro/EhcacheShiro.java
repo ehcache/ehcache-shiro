@@ -103,7 +103,7 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
 
       @Override
       public boolean isEmpty() {
-        return cache.iterator().hasNext();
+        return !cache.iterator().hasNext();
       }
     };
   }
