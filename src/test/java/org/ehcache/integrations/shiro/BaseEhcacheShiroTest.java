@@ -8,7 +8,7 @@ import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.junit.After;
 import org.junit.Before;
 
-class BaseEhcacheShiroTest {
+public class BaseEhcacheShiroTest {
 
   protected CacheManager cacheManager;
 
