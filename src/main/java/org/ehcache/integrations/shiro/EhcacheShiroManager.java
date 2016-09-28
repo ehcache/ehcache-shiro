@@ -20,6 +20,7 @@ import org.apache.shiro.ShiroException;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.cache.CacheManager;
+import org.apache.shiro.io.ResourceUtils;
 import org.apache.shiro.util.Destroyable;
 import org.apache.shiro.util.Initializable;
 import org.ehcache.config.CacheConfiguration;
@@ -29,43 +30,96 @@ import org.ehcache.xml.XmlConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Shiro {@link CacheManager} implementation using the Ehcache 3.0 framework for all cache functionality
+ */
 public class EhcacheShiroManager implements CacheManager, Initializable, Destroyable {
 
   private static final Logger log = LoggerFactory.getLogger(EhcacheShiroManager.class);
 
-  private org.ehcache.CacheManager manager;
+  private AtomicReference<org.ehcache.CacheManager> cacheManagerReference = new AtomicReference<org.ehcache.CacheManager>();
 
+  private String cacheManagerConfigFile = "classpath:/org/ehcache/integrations/shiro/ehcache.xml";
+  private boolean cacheManagerImplicitlyCreated = false;
+
+  /**
+   * Returns the wrapped {@link org.ehcache.CacheManager} instance
+   *
+   * @return the wrapped {@link org.ehcache.CacheManager} instance
+   */
+  public org.ehcache.CacheManager getCacheManager() {
+    return cacheManagerReference.get();
+  }
+
+  /**
+   * Sets the wrapped {@link org.ehcache.CacheManager} instance
+   *
+   * @param cacheManager the {@link org.ehcache.CacheManager} to be used
+   */
+  public void setCacheManager(org.ehcache.CacheManager cacheManager) {
+    cacheManagerReference.set(cacheManager);
+  }
+
+  /**
+   * Returns the resource location of the config file used to initialize a new
+   * EhCache CacheManager instance.  The string can be any resource path supported by the
+   * {@link org.apache.shiro.io.ResourceUtils#getInputStreamForPath(String)} call.
+   * <p/>
+   * This property is ignored if the CacheManager instance is injected directly - that is, it is only used to
+   * lazily create a CacheManager if one is not already provided.
+   *
+   * @return the resource location of the config file used to initialize the wrapped
+   * EhCache CacheManager instance.
+   */
+  public String getCacheManagerConfigFile() {
+    return cacheManagerConfigFile;
+  }
+
+  /**
+   * Sets the resource location of the config file used to initialize the wrapped
+   * EhCache CacheManager instance.  The string can be any resource path supported by the
+   * {@link org.apache.shiro.io.ResourceUtils#getInputStreamForPath(String)} call.
+   * <p/>
+   * This property is ignored if the CacheManager instance is injected directly - that is, it is only used to
+   * lazily create a CacheManager if one is not already provided.
+   *
+   * @param cacheManagerConfigFile resource location of the config file used to create the wrapped
+   *                               EhCache CacheManager instance.
+   */
+  public void setCacheManagerConfigFile(String cacheManagerConfigFile) {
+    this.cacheManagerConfigFile = cacheManagerConfigFile;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   public <K, V> Cache<K, V> getCache(String name) throws CacheException {
+    log.trace("Acquiring EhcacheShiro instance named [{}]", name);
 
-    if (log.isTraceEnabled()) {
-      log.trace("Acquiring EhcacheShiro instance named [" + name + "]");
+    try {
+      org.ehcache.Cache<Object, Object> cache = ensureCacheManager().getCache(name, Object.class, Object.class);
+
+      if (cache == null) {
+        log.info("Cache with name {} does not yet exist.  Creating now.", name);
+        cache = createCache(name);
+        log.info("Added EhcacheShiro named [{}]", name);
+      } else {
+        log.info("Using existing EhcacheShiro named [{}]", name);
+      }
+
+      return new EhcacheShiro<K, V>(cache);
+    } catch (MalformedURLException e) {
+      throw new CacheException(e);
     }
-
-    org.ehcache.Cache<Object, Object> cache = ensureCacheManager().getCache(name, Object.class, Object.class);
-
-    if (cache == null) {
-      if (log.isInfoEnabled()) {
-        log.info("Cache with name " + name + " does not yet exist.  Creating now.");
-      }
-      cache = createCache(name);
-
-      if (log.isInfoEnabled()) {
-        log.info("Added EhcacheShiro named [" + name + "]");
-      }
-    } else {
-      if (log.isInfoEnabled()) {
-        log.info("Using existing EhcacheShiro named [" + name + "]");
-      }
-    }
-
-    return new EhcacheShiro<K, V>(cache);
   }
 
   private org.ehcache.Cache<Object, Object> createCache(String name) {
-    XmlConfiguration xmlConfiguration = createConfiguration();
     try {
+      XmlConfiguration xmlConfiguration = createConfiguration();
       CacheConfigurationBuilder<Object, Object> configurationBuilder = xmlConfiguration.newCacheConfigurationBuilderFromTemplate(
               "defaultCacheConfiguration", Object.class, Object.class);
       CacheConfiguration<Object, Object> cacheConfiguration = configurationBuilder.build();
@@ -76,35 +130,67 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
       throw new CacheException(e);
     } catch (ClassNotFoundException e) {
       throw new CacheException(e);
+    } catch (MalformedURLException e) {
+      throw new CacheException(e);
     }
   }
 
-  private org.ehcache.CacheManager ensureCacheManager() {
-    if (manager == null) {
-      manager = CacheManagerBuilder.newCacheManager(createConfiguration());
-      manager.init();
+  private org.ehcache.CacheManager ensureCacheManager() throws MalformedURLException {
+    if (cacheManagerReference.get() == null) {
+      org.ehcache.CacheManager cacheManager = CacheManagerBuilder.newCacheManager(createConfiguration());
+      cacheManager.init();
+      cacheManagerReference.set(cacheManager);
+
+      cacheManagerImplicitlyCreated = true;
     }
 
-    return manager;
+    return cacheManagerReference.get();
   }
 
-  private URL getResource() {
-    final String fullPath = "/org/ehcache/integrations/shiro/ehcache.xml";
-    return EhcacheShiroManager.class.getClass().getResource(fullPath);
+  private URL getResource() throws MalformedURLException {
+    String cacheManagerConfigFile = getCacheManagerConfigFile();
+    if (cacheManagerConfigFile.startsWith(ResourceUtils.CLASSPATH_PREFIX)) {
+      return EhcacheShiroManager.class.getClass().getResource(stripPrefix(cacheManagerConfigFile));
+    }
+
+    final String url = ResourceUtils.hasResourcePrefix(cacheManagerConfigFile) ? stripPrefix(cacheManagerConfigFile)
+            : cacheManagerConfigFile;
+
+    return new URL(url);
   }
 
-  private XmlConfiguration createConfiguration() {
+  private static String stripPrefix(String resourcePath) {
+    return resourcePath.substring(resourcePath.indexOf(":") + 1);
+  }
+
+  private XmlConfiguration createConfiguration() throws MalformedURLException {
     return new XmlConfiguration(getResource());
   }
 
   public void destroy() throws Exception {
-    if (manager != null) {
-      manager.close();
-      manager = null;
+    if (cacheManagerImplicitlyCreated && cacheManagerReference != null) {
+      cacheManagerReference.get().close();
+      cacheManagerReference.set(null);
     }
   }
 
+  /**
+   * Initializes this instance.
+   * <p/>
+   * If a {@link #setCacheManager CacheManager} has been
+   * explicitly set (e.g. via Dependency Injection or programatically) prior to calling this
+   * method, this method does nothing.
+   * <p/>
+   * However, if no {@code CacheManager} has been set a new {@link org.ehcache.Cache} will be initialized.
+   * It will use {@code ehcache.xml} configuration file at the root of the classpath.
+   *
+   * @throws org.apache.shiro.cache.CacheException if there are any CacheExceptions thrown by EhCache.
+   */
   public void init() throws ShiroException {
-    ensureCacheManager();
+    try {
+      ensureCacheManager();
+    } catch (MalformedURLException e) {
+      throw new ShiroException(e);
+    }
   }
 }
