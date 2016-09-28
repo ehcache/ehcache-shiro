@@ -1,44 +1,25 @@
 package org.ehcache.integrations.shiro;
 
-import org.ehcache.Cache;
-import org.ehcache.CacheManager;
-import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.CacheManagerBuilder;
-import org.ehcache.config.builders.ResourcePoolsBuilder;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collection;
 
-public class EhcacheShiroTest {
+public class EhcacheShiroTest extends BaseEhcacheShiroTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testNullEhCache() {
     new EhcacheShiro<Long, String>(null);
   }
 
-  private CacheManager cacheManager;
-
-  private Cache<Long, String> basicCache;
 
   private EhcacheShiro<Long, String> shiroCache;
 
   @Before
   public void setUp() {
-    cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
-            .withCache("basicCache", CacheConfigurationBuilder.newCacheConfigurationBuilder(
-                    Long.class, String.class, ResourcePoolsBuilder.heap(100))).build(true);
-
-    basicCache = cacheManager.getCache("basicCache", Long.class, String.class);
+    super.setUp();
     shiroCache = new EhcacheShiro<Long, String>(basicCache);
-  }
-
-  @After
-  public void tearDown() {
-    basicCache.clear();
-    cacheManager.close();
   }
 
   @Test

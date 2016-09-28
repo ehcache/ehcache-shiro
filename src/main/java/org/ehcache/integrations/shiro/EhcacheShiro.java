@@ -21,10 +21,7 @@ import org.apache.shiro.cache.CacheException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class EhcacheShiro<K, V> implements Cache<K, V> {
 
@@ -88,14 +85,27 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
   }
 
   public Set<K> keys() {
-    Iterator<org.ehcache.Cache.Entry<K, V>> iterator = cache.iterator();
-    final Set<K> keys = new HashSet<K>();
-    while (iterator.hasNext()) {
-      org.ehcache.Cache.Entry<K, V> entry = iterator.next();
-      keys.add(entry.getKey());
-    }
+    return new AbstractSet<K>() {
+      @Override
+      public Iterator<K> iterator() {
+        return new EhcacheIterator<K, V, K>(cache.iterator()) {
 
-    return keys;
+          protected K getNext(Iterator<org.ehcache.Cache.Entry<K, V>> cacheIterator) {
+            return cacheIterator.next().getKey();
+          }
+        };
+      }
+
+      @Override
+      public int size() {
+        return EhcacheShiro.this.size();
+      }
+
+      @Override
+      public boolean isEmpty() {
+        return cache.iterator().hasNext();
+      }
+    };
   }
 
   public Collection<V> values() {
