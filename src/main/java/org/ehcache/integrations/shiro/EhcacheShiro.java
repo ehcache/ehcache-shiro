@@ -21,7 +21,9 @@ import org.apache.shiro.cache.CacheException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
 
 public class EhcacheShiro<K, V> implements Cache<K, V> {
 
@@ -85,7 +87,7 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
   }
 
   public Set<K> keys() {
-    return new AbstractSet<K>() {
+    return new EhcacheSetWrapper<K>(this, cache) {
       @Override
       public Iterator<K> iterator() {
         return new EhcacheIterator<K, V, K>(cache.iterator()) {
@@ -95,28 +97,20 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
           }
         };
       }
-
-      @Override
-      public int size() {
-        return EhcacheShiro.this.size();
-      }
-
-      @Override
-      public boolean isEmpty() {
-        return !cache.iterator().hasNext();
-      }
     };
   }
 
   public Collection<V> values() {
-    Iterator<org.ehcache.Cache.Entry<K, V>> iterator = cache.iterator();
-    final Set<V> values = new HashSet<V>();
-    while (iterator.hasNext()) {
-      org.ehcache.Cache.Entry<K, V> entry = iterator.next();
-      values.add(entry.getValue());
-    }
-
-    return values;
+    return new EhcacheCollectionWrapper<V>(this, cache) {
+      @Override
+      public Iterator<V> iterator() {
+        return new EhcacheIterator<K, V, V>(cache.iterator()) {
+          protected V getNext(Iterator<org.ehcache.Cache.Entry<K, V>> cacheIterator) {
+            return cacheIterator.next().getValue();
+          }
+        };
+      }
+    };
   }
 
   private void trace(String operation, K k) {
