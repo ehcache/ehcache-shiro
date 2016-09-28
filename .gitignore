@@ -1,0 +1,6 @@
+# Maven ignores
+target/
+
+# IntelliJ ignores
+/.idea/
+*.iml
