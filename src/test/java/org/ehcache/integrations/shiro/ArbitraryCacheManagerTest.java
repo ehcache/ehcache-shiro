@@ -40,6 +40,23 @@ public class ArbitraryCacheManagerTest extends BaseEhcacheShiroTest {
   }
 
   @Test
+  public void testDoubleInit() throws Exception {
+    ehcacheShiroManager.init();
+    CacheManager firstCacheManager = ehcacheShiroManager.getCacheManager();
+    Assert.assertNotNull(firstCacheManager);
+
+    ehcacheShiroManager.setCacheManagerConfigFile("notValidPath");
+    ehcacheShiroManager.init();
+    CacheManager secondCacheManager = ehcacheShiroManager.getCacheManager();
+    Assert.assertNotNull(secondCacheManager);
+
+    Assert.assertEquals(firstCacheManager, secondCacheManager);
+    Assert.assertSame(firstCacheManager, secondCacheManager);
+
+    ehcacheShiroManager.destroy();
+  }
+
+  @Test
   public void testSetCacheManager() {
     ehcacheShiroManager.setCacheManager(cacheManager);
     ehcacheShiroManager.init();
@@ -71,6 +88,6 @@ public class ArbitraryCacheManagerTest extends BaseEhcacheShiroTest {
     ehcacheShiroManager.destroy();
 
     Assert.assertEquals(Status.UNINITIALIZED, firstCacheManager.getStatus());
-    Assert.assertEquals(Status.AVAILABLE, secondCacheManager);
+    Assert.assertEquals(Status.AVAILABLE, secondCacheManager.getStatus());
   }
 }

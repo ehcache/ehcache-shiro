@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Shiro {@link CacheManager} implementation using the Ehcache 3.0 framework for all cache functionality
@@ -41,7 +40,7 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
 
   private static final Logger log = LoggerFactory.getLogger(EhcacheShiroManager.class);
 
-  private AtomicReference<org.ehcache.CacheManager> cacheManagerReference = new AtomicReference<org.ehcache.CacheManager>();
+  private org.ehcache.CacheManager manager;
 
   private String cacheManagerConfigFile = "classpath:/org/ehcache/integrations/shiro/ehcache.xml";
   private boolean cacheManagerImplicitlyCreated = false;
@@ -52,7 +51,7 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
    * @return the wrapped {@link org.ehcache.CacheManager} instance
    */
   public org.ehcache.CacheManager getCacheManager() {
-    return cacheManagerReference.get();
+    return manager;
   }
 
   /**
@@ -61,7 +60,8 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
    * @param cacheManager the {@link org.ehcache.CacheManager} to be used
    */
   public void setCacheManager(org.ehcache.CacheManager cacheManager) {
-    cacheManagerReference.set(cacheManager);
+    manager = cacheManager;
+    cacheManagerImplicitlyCreated = false;
   }
 
   /**
@@ -136,15 +136,14 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
   }
 
   private org.ehcache.CacheManager ensureCacheManager() throws MalformedURLException {
-    if (cacheManagerReference.get() == null) {
-      org.ehcache.CacheManager cacheManager = CacheManagerBuilder.newCacheManager(createConfiguration());
-      cacheManager.init();
-      cacheManagerReference.set(cacheManager);
+    if (manager == null) {
+      manager = CacheManagerBuilder.newCacheManager(createConfiguration());
+      manager.init();
 
       cacheManagerImplicitlyCreated = true;
     }
 
-    return cacheManagerReference.get();
+    return manager;
   }
 
   private URL getResource() throws MalformedURLException {
@@ -168,9 +167,9 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
   }
 
   public void destroy() throws Exception {
-    if (cacheManagerImplicitlyCreated && cacheManagerReference != null) {
-      cacheManagerReference.get().close();
-      cacheManagerReference.set(null);
+    if (cacheManagerImplicitlyCreated && manager != null) {
+      manager.close();
+      manager = null;
     }
   }
 
