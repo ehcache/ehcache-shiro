@@ -1,3 +1,33 @@
 = Ehcache 3 integration in Apache Shiro
 
 This project will provide https://github.com/ehcache/ehcache3[Ehcache 3] support in https://github.com/apache/shiro[Apache Shiro]
+
+= Sample Configurations
+To enable it in Shiro Application use the following configuration:
+
+  [main]
+   cacheManager = org.ehcache.integrations.shiro.EhcacheShiroManager
+   securityManager.cacheManager = $cacheManager
+
+To set custom configuration file use the following configuration:
+
+  [main]
+   cacheManager = org.ehcache.integrations.shiro.EhcacheShiroManager
+   cacheManager.cacheManagerConfigFile = /path/to/custom/configuration.xml
+   securityManager.cacheManager = $cacheManager
+
+= Cache Configuration Considerations
+By default the CacheManager uses default Shiro specific EhCache configuration.
+If you wish to change the cache settings, or configure your own ehcache.xml or org.ehcache.CacheManager instance, you will need to configure the cache region to ensure that Sessions are handled correctly.
+You have to ensure that you have defined cache named "shiro-activeSessionCache" for Shiro's needs.
+
+Please have a look at the default configuration file before creating your own.
+
+= Resources
+Official Shiro documentation for:
+
+http://shiro.apache.org/configuration.html[Configuration]
+
+http://shiro.apache.org/session-management.html[Session Management]
+
+http://shiro.apache.org/caching.html[Caching]

@@ -19,14 +19,37 @@ limitations under the License.
     <persistence directory="${java.io.tmpdir}/shiro-ehcache"/>
 
     <cache alias="shiro-activeSessionCache">
-        <heap unit="entries">10000</heap>
+        <key-type serializer="org.ehcache.impl.serialization.CompactJavaSerializer">
+            java.lang.Object
+        </key-type>
+        <value-type serializer="org.ehcache.impl.serialization.CompactJavaSerializer">
+            java.lang.Object
+        </value-type>
+
+        <resources>
+            <heap unit="entries">10000</heap>
+            <disk unit="GB">1</disk>
+        </resources>
     </cache>
 
     <cache alias="org.apache.shiro.realm.text.PropertiesRealm-0-accounts">
-        <heap unit="entries">10000</heap>
+        <key-type serializer="org.ehcache.impl.serialization.CompactJavaSerializer">
+            java.lang.Object
+        </key-type>
+        <value-type serializer="org.ehcache.impl.serialization.CompactJavaSerializer">
+            java.lang.Object
+        </value-type>
+
+        <resources>
+            <heap unit="entries">1000</heap>
+            <disk unit="GB">1</disk>
+        </resources>
     </cache>
 
     <cache-template name="defaultCacheConfiguration">
+        <expiry>
+            <tti unit="seconds">120</tti>
+        </expiry>
         <heap unit="entries">10000</heap>
     </cache-template>
 
