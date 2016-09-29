@@ -34,7 +34,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Shiro {@link CacheManager} implementation using the Ehcache 3.0 framework for all cache functionality
+ * Shiro {@link CacheManager} implementation using the Ehcache 3.x framework for all cache functionality
  */
 public class EhcacheShiroManager implements CacheManager, Initializable, Destroyable {
 
