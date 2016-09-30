@@ -60,7 +60,7 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
     V previousValue = null;
 
     while (true) {
-      previousValue = get(k);
+      previousValue = cache.get(k);
       if (previousValue == null) {
         if (cache.putIfAbsent(k, v) == null) {
           break;
@@ -81,7 +81,7 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
     V previousValue = null;
 
     while (true) {
-      previousValue = get(k);
+      previousValue = cache.get(k);
       if (previousValue == null) {
         break;
       } else {
