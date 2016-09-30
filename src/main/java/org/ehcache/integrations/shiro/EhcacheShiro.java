@@ -31,8 +31,6 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
 
   private final org.ehcache.Cache<K, V> cache;
 
-  private final Object mutex = new Object();
-
   public EhcacheShiro(org.ehcache.Cache cache) {
     if (cache == null) {
       throw new IllegalArgumentException("Cache argument cannot be null.");
@@ -60,10 +58,20 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
     trace("Putting object", k);
 
     V previousValue = null;
-    synchronized (mutex) {
+
+    while (true) {
       previousValue = get(k);
-      cache.put(k, v);
+      if (previousValue == null) {
+        if (cache.putIfAbsent(k, v) == null) {
+          break;
+        }
+      } else {
+        if (cache.replace(k, v) != null) {
+          break;
+        }
+      }
     }
+
     return previousValue;
   }
 
@@ -71,10 +79,19 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
     trace("Removing object", k);
 
     V previousValue = null;
-    synchronized (mutex) {
+
+    while (true) {
       previousValue = get(k);
-      cache.remove(k);
+      if (previousValue == null) {
+        cache.remove(k);
+        break;
+      } else {
+        if (cache.remove(k, previousValue)) {
+          break;
+        }
+      }
     }
+
     return previousValue;
   }
 

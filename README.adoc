@@ -23,6 +23,18 @@ You have to ensure that you have defined cache named "shiro-activeSessionCache" 
 
 Please have a look at the default configuration file before creating your own.
 
+= Maven Dependency
+
+    <dependency>
+      <groupId>org.ehcache.integrations.shiro</groupId>
+      <artifactId>shiro-ehcache3</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+= Shiro Support
+
+This project works with Shiro 1.1+
+
 = Resources
 Official Shiro documentation for:
 
