@@ -40,10 +40,12 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
 
   private static final Logger log = LoggerFactory.getLogger(EhcacheShiroManager.class);
 
-  private org.ehcache.CacheManager manager;
+  private volatile org.ehcache.CacheManager manager;
 
-  private String cacheManagerConfigFile = "classpath:/org/ehcache/integrations/shiro/ehcache.xml";
-  private boolean cacheManagerImplicitlyCreated = false;
+  private volatile String cacheManagerConfigFile = "classpath:/org/ehcache/integrations/shiro/ehcache.xml";
+  private volatile boolean cacheManagerImplicitlyCreated = false;
+
+  private volatile XmlConfiguration cacheConfiguration = null;
 
   /**
    * Returns the wrapped {@link org.ehcache.CacheManager} instance
@@ -60,6 +62,11 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
    * @param cacheManager the {@link org.ehcache.CacheManager} to be used
    */
   public void setCacheManager(org.ehcache.CacheManager cacheManager) {
+    try {
+      destroy();
+    } catch (Exception e) {
+      log.warn("The Shiro managed CacheManager threw an Exception while closing", e);
+    }
     manager = cacheManager;
     cacheManagerImplicitlyCreated = false;
   }
@@ -119,7 +126,7 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
 
   private org.ehcache.Cache<Object, Object> createCache(String name) {
     try {
-      XmlConfiguration xmlConfiguration = createConfiguration();
+      XmlConfiguration xmlConfiguration = getConfiguration();
       CacheConfigurationBuilder<Object, Object> configurationBuilder = xmlConfiguration.newCacheConfigurationBuilderFromTemplate(
               "defaultCacheConfiguration", Object.class, Object.class);
       CacheConfiguration<Object, Object> cacheConfiguration = configurationBuilder.build();
@@ -137,7 +144,7 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
 
   private org.ehcache.CacheManager ensureCacheManager() throws MalformedURLException {
     if (manager == null) {
-      manager = CacheManagerBuilder.newCacheManager(createConfiguration());
+      manager = CacheManagerBuilder.newCacheManager(getConfiguration());
       manager.init();
 
       cacheManagerImplicitlyCreated = true;
@@ -162,8 +169,12 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
     return resourcePath.substring(resourcePath.indexOf(":") + 1);
   }
 
-  private XmlConfiguration createConfiguration() throws MalformedURLException {
-    return new XmlConfiguration(getResource());
+  private XmlConfiguration getConfiguration() throws MalformedURLException {
+    if (cacheConfiguration == null) {
+      cacheConfiguration = new XmlConfiguration(getResource());
+    }
+
+    return cacheConfiguration;
   }
 
   public void destroy() throws Exception {

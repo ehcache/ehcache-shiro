@@ -90,7 +90,6 @@ public class ArbitraryCacheManagerTest extends BaseEhcacheShiroTest {
    * @throws Exception
    */
   @Test
-  @Ignore
   public void testArbitraryCacheManager() throws Exception {
     ehcacheShiroManager.init();
     CacheManager firstCacheManager = ehcacheShiroManager.getCacheManager();

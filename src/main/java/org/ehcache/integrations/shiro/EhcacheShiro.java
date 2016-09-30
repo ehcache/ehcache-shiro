@@ -57,16 +57,40 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
   public V put(K k, V v) throws CacheException {
     trace("Putting object", k);
 
-    V previousValue = get(k);
-    cache.put(k, v);
+    V previousValue = null;
+
+    while (true) {
+      previousValue = cache.get(k);
+      if (previousValue == null) {
+        if (cache.putIfAbsent(k, v) == null) {
+          break;
+        }
+      } else {
+        if (cache.replace(k, v) != null) {
+          break;
+        }
+      }
+    }
+
     return previousValue;
   }
 
   public V remove(K k) throws CacheException {
     trace("Removing object", k);
 
-    V previousValue = get(k);
-    cache.remove(k);
+    V previousValue = null;
+
+    while (true) {
+      previousValue = cache.get(k);
+      if (previousValue == null) {
+        break;
+      } else {
+        if (cache.remove(k, previousValue)) {
+          break;
+        }
+      }
+    }
+
     return previousValue;
   }
 

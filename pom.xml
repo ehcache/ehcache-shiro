@@ -18,23 +18,44 @@ limitations under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.ehcache.integrations</groupId>
-    <artifactId>shiro-ehcache3-integration</artifactId>
-    <packaging>jar</packaging>
+    <groupId>org.ehcache.integrations.shiro</groupId>
+    <artifactId>shiro-ehcache3</artifactId>
+    <packaging>bundle</packaging>
     <version>1.0-SNAPSHOT</version>
     <name>shiro-ehcache3-integration</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>org.apache.shiro.ehcache3</Bundle-SymbolicName>
+                        <Export-Package>org.ehcache.integrations.shiro*;version=1.0.0</Export-Package>
+                        <Import-Package>
+                            org.apache.shiro*;version="[1.1, 2)",
+                            org.ehcache*,
+                            *
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
             <groupId>org.ehcache</groupId>
             <artifactId>ehcache</artifactId>
-            <version>3.1.2</version>
+            <version>3.1.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.shiro</groupId>
             <artifactId>shiro-core</artifactId>
-            <version>1.3.2</version>
+            <version>1.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
