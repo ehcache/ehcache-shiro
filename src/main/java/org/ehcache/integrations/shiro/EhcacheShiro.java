@@ -83,7 +83,6 @@ public class EhcacheShiro<K, V> implements Cache<K, V> {
     while (true) {
       previousValue = get(k);
       if (previousValue == null) {
-        cache.remove(k);
         break;
       } else {
         if (cache.remove(k, previousValue)) {

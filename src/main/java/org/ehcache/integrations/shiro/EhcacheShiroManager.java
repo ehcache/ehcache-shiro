@@ -40,12 +40,12 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
 
   private static final Logger log = LoggerFactory.getLogger(EhcacheShiroManager.class);
 
-  private org.ehcache.CacheManager manager;
+  private volatile org.ehcache.CacheManager manager;
 
-  private String cacheManagerConfigFile = "classpath:/org/ehcache/integrations/shiro/ehcache.xml";
-  private boolean cacheManagerImplicitlyCreated = false;
+  private volatile String cacheManagerConfigFile = "classpath:/org/ehcache/integrations/shiro/ehcache.xml";
+  private volatile boolean cacheManagerImplicitlyCreated = false;
 
-  private XmlConfiguration cacheConfiguration = null;
+  private volatile XmlConfiguration cacheConfiguration = null;
 
   /**
    * Returns the wrapped {@link org.ehcache.CacheManager} instance
@@ -65,7 +65,7 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
     try {
       destroy();
     } catch (Exception e) {
-      log.info("The Shiro managed CacheManager threw an Exception while closing", e);
+      log.warn("The Shiro managed CacheManager threw an Exception while closing", e);
     }
     manager = cacheManager;
     cacheManagerImplicitlyCreated = false;
