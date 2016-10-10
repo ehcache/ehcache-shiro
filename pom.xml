@@ -27,7 +27,7 @@ limitations under the License.
     <groupId>org.ehcache.integrations.shiro</groupId>
     <artifactId>shiro-ehcache3</artifactId>
     <packaging>bundle</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>shiro-ehcache3-integration</name>
 
     <properties>
