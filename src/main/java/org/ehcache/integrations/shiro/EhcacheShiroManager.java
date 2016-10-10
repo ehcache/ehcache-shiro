@@ -75,9 +75,10 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
    * Returns the resource location of the config file used to initialize a new
    * EhCache CacheManager instance.  The string can be any resource path supported by the
    * {@link org.apache.shiro.io.ResourceUtils#getInputStreamForPath(String)} call.
-   * <p/>
+   * <P>
    * This property is ignored if the CacheManager instance is injected directly - that is, it is only used to
    * lazily create a CacheManager if one is not already provided.
+   * </P>
    *
    * @return the resource location of the config file used to initialize the wrapped
    * EhCache CacheManager instance.
@@ -90,9 +91,10 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
    * Sets the resource location of the config file used to initialize the wrapped
    * EhCache CacheManager instance.  The string can be any resource path supported by the
    * {@link org.apache.shiro.io.ResourceUtils#getInputStreamForPath(String)} call.
-   * <p/>
+   * <P>
    * This property is ignored if the CacheManager instance is injected directly - that is, it is only used to
    * lazily create a CacheManager if one is not already provided.
+   * </P>
    *
    * @param cacheManagerConfigFile resource location of the config file used to create the wrapped
    *                               EhCache CacheManager instance.
@@ -186,13 +188,15 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
 
   /**
    * Initializes this instance.
-   * <p/>
+   * <P>
    * If a {@link #setCacheManager CacheManager} has been
    * explicitly set (e.g. via Dependency Injection or programatically) prior to calling this
    * method, this method does nothing.
-   * <p/>
+   * </P>
+   * <P>
    * However, if no {@code CacheManager} has been set a new {@link org.ehcache.Cache} will be initialized.
    * It will use {@code ehcache.xml} configuration file at the root of the classpath.
+   * </P>
    *
    * @throws org.apache.shiro.cache.CacheException if there are any CacheExceptions thrown by EhCache.
    */
