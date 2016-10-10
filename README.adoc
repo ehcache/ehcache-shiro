@@ -2,6 +2,8 @@
 
 This project will provide https://github.com/ehcache/ehcache3[Ehcache 3] support in https://github.com/apache/shiro[Apache Shiro]
 
+Build status: image:https://ehcache.ci.cloudbees.com/buildStatus/icon?job=ehcache-shiro[Ehcache@Cloudbees, link="https://ehcache.ci.cloudbees.com/job/ehcache-shiro/"]
+
 = Sample Configurations
 
 To enable it in Shiro application use the following configuration:
@@ -34,7 +36,7 @@ Please have a look at the default configuration file before creating your own.
 <dependency>
   <groupId>org.ehcache.integrations.shiro</groupId>
   <artifactId>shiro-ehcache3</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.0</version>
 </dependency>
 ```
 
@@ -49,3 +51,15 @@ Official Shiro documentation for:
 * http://shiro.apache.org/configuration.html[Configuration]
 * http://shiro.apache.org/session-management.html[Session Management]
 * http://shiro.apache.org/caching.html[Caching]
+
+= Releases
+
+== Latest release
+
+The latest release is 1.0.0.
+
+== Changelog
+
+=== 1.0.0
+
+* The first version was released on October 10th, 2016.
