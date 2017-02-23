@@ -158,7 +158,7 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
   private URL getResource() throws MalformedURLException {
     String cacheManagerConfigFile = getCacheManagerConfigFile();
     if (cacheManagerConfigFile.startsWith(ResourceUtils.CLASSPATH_PREFIX)) {
-      return EhcacheShiroManager.class.getClass().getResource(stripPrefix(cacheManagerConfigFile));
+      return EhcacheShiroManager.class.getClassLoader().getResource(stripPrefix(cacheManagerConfigFile));
     }
 
     final String url = ResourceUtils.hasResourcePrefix(cacheManagerConfigFile) ? stripPrefix(cacheManagerConfigFile)
