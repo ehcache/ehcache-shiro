@@ -42,7 +42,7 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
 
   private volatile org.ehcache.CacheManager manager;
 
-  private volatile String cacheManagerConfigFile = "classpath:/org/ehcache/integrations/shiro/ehcache.xml";
+  private volatile String cacheManagerConfigFile = "classpath:org/ehcache/integrations/shiro/ehcache.xml";
   private volatile boolean cacheManagerImplicitlyCreated = false;
 
   private volatile XmlConfiguration cacheConfiguration = null;
@@ -157,11 +157,12 @@ public class EhcacheShiroManager implements CacheManager, Initializable, Destroy
 
   private URL getResource() throws MalformedURLException {
     String cacheManagerConfigFile = getCacheManagerConfigFile();
+    String configFileWithoutPrefix = stripPrefix(cacheManagerConfigFile);
     if (cacheManagerConfigFile.startsWith(ResourceUtils.CLASSPATH_PREFIX)) {
-      return EhcacheShiroManager.class.getClass().getResource(stripPrefix(cacheManagerConfigFile));
+      return ClassUtils.getResource(configFileWithoutPrefix);
     }
 
-    final String url = ResourceUtils.hasResourcePrefix(cacheManagerConfigFile) ? stripPrefix(cacheManagerConfigFile)
+    String url = ResourceUtils.hasResourcePrefix(cacheManagerConfigFile) ? configFileWithoutPrefix
             : cacheManagerConfigFile;
 
     return new URL(url);
